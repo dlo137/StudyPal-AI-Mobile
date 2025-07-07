@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # StudyPal AI Mobile
 
 A React Native mobile application built with Expo framework for cross-platform development.
@@ -81,3 +82,6 @@ For more information on deployment, check the [Expo documentation](https://docs.
 ## License
 
 This project is private and proprietary.
+=======
+# StudPal-AI-Mobile
+>>>>>>> 867c6e8d19262e873571a44777b3129372793869
