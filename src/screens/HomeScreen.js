@@ -1,5 +1,7 @@
+
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import colors from '../theme/colors';
 
 /**
  * Home Screen Component
@@ -17,7 +19,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.darkBg,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
@@ -25,13 +27,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#2c3e50',
+    color: colors.primaryBlue,
     marginBottom: 10,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: '#7f8c8d',
+    color: colors.secondaryText,
     textAlign: 'center',
   },
 });
