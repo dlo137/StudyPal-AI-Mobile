@@ -4,9 +4,13 @@
 
 // --- Ensure React Native is imported before any code runs ---
 import * as ReactNative from 'react-native';
-const { View, Text, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, StyleSheet, SafeAreaView } = ReactNative;
+const { View, Text, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, StyleSheet, SafeAreaView, Image } = ReactNative;
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+
+// Import the StudyPal logo from the assets folder
+const studyPalIcon = require('../../assets/studypal-icon.png');
 
 /**
  * Chat Screen Component
@@ -27,6 +31,7 @@ export default function ChatScreen() {
     flatListRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
 
+  // Split subject options into two rows for display
   const subjectOptions = [
     { key: 'Math', color: '#4285F4' },
     { key: 'Science', color: '#10b981' },
@@ -39,6 +44,13 @@ export default function ChatScreen() {
     { key: 'Biology', color: '#ec4899' },
     { key: 'Fitness', color: '#14b8a6' },
     { key: 'Economics', color: '#a21caf' },
+  ];
+
+  // Helper to split into two even rows (6 per row, last row may have fewer)
+  // For 11 options, 6 in first row, 5 in second row
+  const subjectRows = [
+    subjectOptions.slice(0, 6),
+    subjectOptions.slice(6, 11)
   ];
 
   const sendMessage = () => {
@@ -81,7 +93,7 @@ export default function ChatScreen() {
       {/* Left: Logo, Title, New Chat */}
       <View style={styles.headerLeft}>
         <Text style={styles.headerTitleText}>StudyPal</Text>
-        {/* <Image source={studyPalIcon} style={styles.headerLogo} resizeMode="contain" /> */}
+        <Image source={studyPalIcon} style={styles.headerLogo} resizeMode="contain" />
         <TouchableOpacity
           style={styles.headerNewChatBtn}
           onPress={() => setMessages([])}
@@ -130,7 +142,9 @@ export default function ChatScreen() {
     </View>
   );
 
-  // Welcome screen: centered title, subject bubbles, input
+
+  // --- MAIN SECTION: Welcome screen (no messages) ---
+  // Shows centered title, subject bubbles in two rows, and input bar
   if (messages.length === 0) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -141,22 +155,36 @@ export default function ChatScreen() {
           keyboardVerticalOffset={90}
         >
           <View style={styles.centeredContent}>
+            {/* Welcome title */}
             <Text style={styles.welcomeTitle}>How can I help you?</Text>
-            <View style={styles.subjectsRow}>
-              {subjectOptions.map(subject => (
-                <TouchableOpacity
-                  key={subject.key}
-                  style={[styles.subjectBubble, { backgroundColor: subject.color }]}
-                  onPress={() => handleSubjectSelect(subject.key)}
-                >
-                  <Text style={styles.subjectText}>{subject.key}</Text>
-                </TouchableOpacity>
+            {/* Subject bubbles in two rows */}
+            <View>
+              {subjectRows.map((row, idx) => (
+                <View key={idx} style={[styles.subjectsRow, { marginVertical: 2, flexWrap: 'nowrap' }]}> {/* Force single row, tighter spacing */}
+                  {row.map(subject => (
+                    <TouchableOpacity
+                      key={subject.key}
+                      style={[
+                        styles.subjectBubbleSmall,
+                        { backgroundColor: subject.color, minWidth: 48, paddingHorizontal: 8, paddingVertical: 5 }
+                      ]}
+                      onPress={() => handleSubjectSelect(subject.key)}
+                    >
+                      <Text style={styles.subjectTextSmall}>{subject.key}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               ))}
             </View>
+            {/* Input bar for user question */}
             <View style={styles.inputBarCentered}>
-              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#2a1052', borderRadius: 16 }}>
+              {/* Input bar background changed to dark grey (#23232a) for better contrast */}
+              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#23232a', borderRadius: 16 }}>
                 <TextInput
-                  style={[styles.input, { backgroundColor: 'transparent', marginRight: 0 }]}
+                  style={[
+                    styles.input,
+                    { backgroundColor: 'transparent', marginRight: 0, textAlign: 'left', textAlignVertical: 'top', paddingTop: 10, paddingBottom: 0 }
+                  ]}
                   value={input}
                   onChangeText={setInput}
                   placeholder="Type your question..."
@@ -166,8 +194,8 @@ export default function ChatScreen() {
                     if (!input.trim()) setInput('');
                   }}
                 />
-                <TouchableOpacity style={[styles.sendButton, { marginLeft: 0, marginRight: 4 }]} onPress={sendMessage}>
-                  <Ionicons name="send" size={24} color="#fff" />
+                <TouchableOpacity style={[styles.sendButtonSmall, { marginLeft: 0, marginRight: 4 }]} onPress={sendMessage}>
+                  <Ionicons name="send" size={18} color="#fff" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -177,7 +205,8 @@ export default function ChatScreen() {
     );
   }
 
-  // Chat screen with messages
+  // --- MAIN SECTION: Chat screen with messages ---
+  // Shows chat messages and input bar
   return (
     <SafeAreaView style={styles.safeArea}>
       {renderHeader()}
@@ -186,6 +215,7 @@ export default function ChatScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={90}
       >
+        {/* Chat messages list */}
         <FlatList
           ref={flatListRef}
           data={messages}
@@ -193,10 +223,15 @@ export default function ChatScreen() {
           keyExtractor={item => item.id}
           contentContainerStyle={styles.messagesList}
         />
+        {/* Input bar for user question */}
         <View style={styles.inputBar}>
-          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#2a1052', borderRadius: 16 }}>
+          {/* Input bar background changed to dark grey (#23232a) for better contrast */}
+          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#23232a', borderRadius: 16 }}>
             <TextInput
-              style={[styles.input, { backgroundColor: 'transparent', marginRight: 0 }]}
+              style={[
+                styles.input,
+                { backgroundColor: 'transparent', marginRight: 0, textAlign: 'left', textAlignVertical: 'top', paddingTop: 10, paddingBottom: 0 }
+              ]}
               value={input}
               onChangeText={setInput}
               placeholder="Type your question..."
@@ -206,8 +241,8 @@ export default function ChatScreen() {
                 if (!input.trim()) setInput('');
               }}
             />
-            <TouchableOpacity style={[styles.sendButton, { marginLeft: 0, marginRight: 4 }]} onPress={sendMessage}>
-              <Ionicons name="send" size={24} color="#fff" />
+            <TouchableOpacity style={[styles.sendButtonSmall, { marginLeft: 0, marginRight: 4 }]} onPress={sendMessage}>
+              <Ionicons name="send" size={18} color="#fff" />
             </TouchableOpacity>
           </View>
         </View>
@@ -257,10 +292,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     elevation: 2,
   },
+  subjectBubbleSmall: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    margin: 3,
+    minWidth: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 1,
+  },
   subjectText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 14,
+  },
+  subjectTextSmall: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 12,
   },
   inputBarCentered: {
     flexDirection: 'row',
@@ -375,7 +425,7 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   userMessage: {
-    backgroundColor: '#2a1052',
+    backgroundColor: '#23232a',
     alignSelf: 'flex-end',
   },
   aiMessage: {
@@ -405,7 +455,7 @@ const styles = StyleSheet.create({
     maxHeight: 100,
     paddingHorizontal: 12,
     color: '#ffffff',
-    backgroundColor: '#2a1052',
+    backgroundColor: '#23232a',
     borderRadius: 16,
     marginRight: 8,
   },
@@ -414,5 +464,13 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 10,
     marginLeft: 0,
+  },
+  sendButtonSmall: {
+    backgroundColor: '#4285F4',
+    borderRadius: 16,
+    padding: 6,
+    marginLeft: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
