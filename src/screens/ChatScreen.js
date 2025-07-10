@@ -4,7 +4,7 @@
 
 // --- Ensure React Native is imported before any code runs ---
 import * as ReactNative from 'react-native';
-const { View, Text, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, StyleSheet, SafeAreaView, Image } = ReactNative;
+const { View, Text, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, StyleSheet, SafeAreaView, Image, Pressable } = ReactNative;
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
@@ -33,24 +33,22 @@ export default function ChatScreen() {
 
   // Split subject options into two rows for display
   const subjectOptions = [
-    { key: 'Math', color: '#4285F4' },
-    { key: 'Science', color: '#10b981' },
-    { key: 'Literature', color: '#f43f5e' },
-    { key: 'Programming', color: '#f59e42' },
-    { key: 'Health', color: '#8B5CF6' },
-    { key: 'History', color: '#f59e42' },
-    { key: 'Physics', color: '#06b6d4' },
-    { key: 'Chemistry', color: '#84cc16' },
-    { key: 'Biology', color: '#ec4899' },
-    { key: 'Fitness', color: '#14b8a6' },
-    { key: 'Economics', color: '#a21caf' },
+    { key: 'Math', color: '#4F9DFE' },         // more vibrant blue
+    { key: 'Science', color: '#3DDC97' },      // more vibrant green
+    { key: 'Literature', color: '#FF5C8A' },   // more vibrant red/pink
+    { key: 'Programming', color: '#FFD166' },  // more vibrant orange/yellow
+    { key: 'Health', color: '#A084EE' },       // more vibrant purple
+    { key: 'Physics', color: '#38CFF5' },      // more vibrant cyan
+    { key: 'Chemistry', color: '#B6E944' },    // more vibrant lime
+    { key: 'Biology', color: '#FF8FCF' },      // more vibrant pink
+    { key: 'Fitness', color: '#2EE6C5' },      // more vibrant teal
+    { key: 'History', color: '#FFD166' },      // more vibrant orange/yellow (same as Programming)
   ];
 
-  // Helper to split into two even rows (6 per row, last row may have fewer)
-  // For 11 options, 6 in first row, 5 in second row
+  // Place History on the second row
   const subjectRows = [
-    subjectOptions.slice(0, 6),
-    subjectOptions.slice(6, 11)
+    subjectOptions.slice(0, 5), // Math, Science, Literature, Programming, Health
+    subjectOptions.slice(5, 10) // Physics, Chemistry, Biology, Fitness, History
   ];
 
   const sendMessage = () => {
@@ -149,37 +147,65 @@ export default function ChatScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         {renderHeader()}
-        <KeyboardAvoidingView
-          style={styles.centeredContainer}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={90}
-        >
-          <View style={styles.centeredContent}>
-            {/* Welcome title */}
-            <Text style={styles.welcomeTitle}>How can I help you?</Text>
-            {/* Subject bubbles in two rows */}
-            <View>
-              {subjectRows.map((row, idx) => (
-                <View key={idx} style={[styles.subjectsRow, { marginVertical: 2, flexWrap: 'nowrap' }]}> {/* Force single row, tighter spacing */}
-                  {row.map(subject => (
-                    <TouchableOpacity
-                      key={subject.key}
-                      style={[
-                        styles.subjectBubbleSmall,
-                        { backgroundColor: subject.color, minWidth: 48, paddingHorizontal: 8, paddingVertical: 5 }
-                      ]}
-                      onPress={() => handleSubjectSelect(subject.key)}
-                    >
-                      <Text style={styles.subjectTextSmall}>{subject.key}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              ))}
-            </View>
-            {/* Input bar for user question */}
-            <View style={styles.inputBarCentered}>
+        <Pressable onPress={ReactNative.Keyboard.dismiss} style={{ flex: 1 }} pointerEvents={undefined}>
+          <KeyboardAvoidingView
+            style={styles.centeredContainer}
+            keyboardVerticalOffset={90}
+          >
+            <View style={[styles.centeredContent, {paddingHorizontal: 16}]}> 
+              {/* Welcome title */}
+              <Text style={styles.welcomeTitle}>How can I help you?</Text>
+              {/* Subject bubbles in two rows */}
+              <View style={{ width: '100%', alignSelf: 'center', paddingHorizontal: 4 }}>
+                {subjectRows.map((row, idx) => (
+                  <View
+                    key={idx}
+                    style={{
+                      flexDirection: 'row',
+                      flexWrap: 'nowrap',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginVertical: 2,
+                      width: '100%',
+                      gap: 0, // for web, but not supported on mobile
+                    }}
+                  >
+                    {row.map((subject, sidx) => (
+                      <TouchableOpacity
+                        key={subject.key}
+                        style={[
+                          styles.subjectBubbleSmall,
+                          {
+                            backgroundColor: subject.color,
+                            minWidth: 36,
+                            alignSelf: 'center',
+                            marginLeft: sidx === 0 ? 0 : 2,
+                            marginRight: sidx === row.length - 1 ? 0 : 2,
+                            marginVertical: 1,
+                            paddingHorizontal: 10,
+                            paddingVertical: 7,
+                          },
+                        ]}
+                        onPress={() => handleSubjectSelect(subject.key)}
+                      >
+                        <Text
+                          style={[
+                            styles.subjectTextSmall,
+                            { fontSize: 12, color: 'rgba(0,0,0,0.65 )', fontWeight: 'bold' }
+                          ]}
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          {subject.key}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                ))}
+              </View>
+              {/* Input bar for user question */}
               {/* Input bar background changed to dark grey (#23232a) for better contrast */}
-              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#23232a', borderRadius: 16 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#23232a', borderRadius: 32, width: '100%', marginTop: 18, paddingVertical: 6, paddingHorizontal: 8 }}>
                 <TextInput
                   style={[
                     styles.input,
@@ -194,13 +220,21 @@ export default function ChatScreen() {
                     if (!input.trim()) setInput('');
                   }}
                 />
+                <Pressable
+                  style={{ marginLeft: 0, marginRight: 6, padding: 0, backgroundColor: 'transparent', borderRadius: 0, alignItems: 'center', justifyContent: 'center', height: 24, width: 24 }}
+                  onPress={() => {}}
+                  android_ripple={undefined}
+                  accessibilityLabel="Attach file"
+                >
+                  <MaterialIcons name="attach-file" size={20} color="#a0a0a0" style={{ transform: [{ rotate: '30deg' }] }} />
+                </Pressable>
                 <TouchableOpacity style={[styles.sendButtonSmall, { marginLeft: 0, marginRight: 4 }]} onPress={sendMessage}>
                   <Ionicons name="send" size={18} color="#fff" />
                 </TouchableOpacity>
               </View>
             </View>
-          </View>
-        </KeyboardAvoidingView>
+          </KeyboardAvoidingView>
+        </Pressable>
       </SafeAreaView>
     );
   }
@@ -210,43 +244,53 @@ export default function ChatScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       {renderHeader()}
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={90}
-      >
-        {/* Chat messages list */}
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          renderItem={renderItem}
-          keyExtractor={item => item.id}
-          contentContainerStyle={styles.messagesList}
-        />
-        {/* Input bar for user question */}
-        <View style={styles.inputBar}>
-          {/* Input bar background changed to dark grey (#23232a) for better contrast */}
-          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#23232a', borderRadius: 16 }}>
-            <TextInput
-              style={[
-                styles.input,
-                { backgroundColor: 'transparent', marginRight: 0, textAlign: 'left', textAlignVertical: 'top', paddingTop: 10, paddingBottom: 0 }
-              ]}
-              value={input}
-              onChangeText={setInput}
-              placeholder="Type your question..."
-              placeholderTextColor="#a0a0a0"
-              multiline
-              onBlur={() => {
-                if (!input.trim()) setInput('');
-              }}
+      <Pressable onPress={ReactNative.Keyboard.dismiss} style={{ flex: 1 }} pointerEvents={undefined}>
+        <KeyboardAvoidingView
+          style={styles.container}
+          keyboardVerticalOffset={90}
+        >
+          <View style={{ flex: 1 }}>
+            {/* Chat messages list */}
+            <FlatList
+              ref={flatListRef}
+              data={messages}
+              renderItem={renderItem}
+              keyExtractor={item => item.id}
+              contentContainerStyle={styles.messagesList}
+              inverted
             />
-            <TouchableOpacity style={[styles.sendButtonSmall, { marginLeft: 0, marginRight: 4 }]} onPress={sendMessage}>
-              <Ionicons name="send" size={18} color="#fff" />
-            </TouchableOpacity>
+            {/* Input bar for user question */}
+            {/* Input bar background changed to dark grey (#23232a) for better contrast */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#23232a', borderRadius: 32, width: '100%', paddingVertical: 8, paddingHorizontal: 8 }}>
+              <TextInput
+                style={[
+                  styles.input,
+                  { backgroundColor: 'transparent', marginRight: 0, textAlign: 'left', textAlignVertical: 'top', paddingTop: 10, paddingBottom: 0 }
+                ]}
+                value={input}
+                onChangeText={setInput}
+                placeholder="Type your question..."
+                placeholderTextColor="#a0a0a0"
+                multiline
+                onBlur={() => {
+                  if (!input.trim()) setInput('');
+                }}
+              />
+              <Pressable
+                style={{ marginLeft: 0, marginRight: 6, padding: 0, backgroundColor: 'transparent', borderRadius: 0, alignItems: 'center', justifyContent: 'center', height: 24, width: 24 }}
+                onPress={() => {}}
+                android_ripple={undefined}
+                accessibilityLabel="Attach file"
+              >
+                <MaterialIcons name="attach-file" size={20} color="#a0a0a0" style={{ transform: [{ rotate: '30deg' }] }} />
+              </Pressable>
+              <TouchableOpacity style={[styles.sendButtonSmall, { marginLeft: 0, marginRight: 4 }]} onPress={sendMessage}>
+                <Ionicons name="send" size={18} color="#fff" />
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </Pressable>
     </SafeAreaView>
   );
 }
@@ -258,7 +302,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: '#141414',
   },
   centeredContent: {
     width: '100%',
@@ -266,6 +310,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
+    paddingHorizontal: 16,
+    boxSizing: 'border-box',
   },
   welcomeTitle: {
     fontSize: 26,
@@ -280,7 +326,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginVertical: 12,
-    gap: 8,
+    // gap is not supported on mobile, use marginHorizontal on children
   },
   subjectBubble: {
     paddingHorizontal: 16,
@@ -296,7 +342,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 16,
-    margin: 3,
+    marginHorizontal: 4,
+    marginVertical: 3,
     minWidth: 56,
     alignItems: 'center',
     justifyContent: 'center',
@@ -316,7 +363,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 18,
-    backgroundColor: '#000',
+    backgroundColor: '#18181b',
     borderRadius: 16,
     padding: 6,
     width: '100%',
@@ -330,7 +377,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#1e293b',
-    backgroundColor: '#000',
+    backgroundColor: '#18181b',
     zIndex: 10,
   },
   headerLeft: {
@@ -354,7 +401,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#000',
+    backgroundColor: '#18181b',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -407,14 +454,16 @@ const styles = StyleSheet.create({
     height: 32,
     width: 32,
     borderRadius: 16,
-    backgroundColor: '#000',
+    backgroundColor: '#18181b',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: 'transparent',
   },
   messagesList: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
     flexGrow: 1,
     justifyContent: 'flex-end',
   },
@@ -451,13 +500,19 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    minHeight: 40,
-    maxHeight: 100,
-    paddingHorizontal: 12,
+    minHeight: 36,
+    maxHeight: 80,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     color: '#ffffff',
     backgroundColor: '#23232a',
-    borderRadius: 16,
+    borderRadius: 32,
     marginRight: 8,
+    ...Platform.select({
+      ios: { lineHeight: 20 },
+      android: {},
+      default: {},
+    }),
   },
   sendButton: {
     backgroundColor: '#4285F4',

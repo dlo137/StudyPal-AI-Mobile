@@ -144,9 +144,15 @@ const styles = StyleSheet.create({
   section: { padding: 18 },
   sectionTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 12, color: colors.primaryBlue },
   menuBtn: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.primaryHoverBlue, borderRadius: 12, padding: 14, marginBottom: 12,
-    shadowColor: colors.darkText, shadowOpacity: 0.03, shadowRadius: 2, elevation: 1
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primaryHoverBlue,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
+    // Use boxShadow for web compatibility, fallback to elevation for native
+    boxShadow: '0px 2px 8px rgba(0,0,0,0.03)',
+    elevation: 1,
   },
   menuIcon: { marginRight: 16 },
   menuTitle: { fontSize: 15, fontWeight: '600', color: colors.lightText },
