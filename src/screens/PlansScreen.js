@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons, FontAwesome5, Feather } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5, Feather, MaterialIcons } from '@expo/vector-icons';
 import colors from '../theme/colors';
 
 /**
@@ -31,7 +31,7 @@ export default function PlansScreen() {
         'Free Usage',
         'No Credit Card Required'
       ],
-      icon: <Feather name="zap" size={14} color="#fff" />,
+      icon: <Feather name="zap" size={11} color="#fff" />,
       gradient: ['#8C52FF', '#5CE1E6']
     },
     {
@@ -43,7 +43,7 @@ export default function PlansScreen() {
         'Email Support',
         'Priority Access to New Features'
       ],
-      icon: <FontAwesome5 name="star" size={14} color="#fff" />,
+      icon: <FontAwesome5 name="star" size={11} color="#fff" />,
       gradient: ['#8C52FF', '#FFD700']
     },
     {
@@ -56,7 +56,7 @@ export default function PlansScreen() {
         'Priority Access to New Features',
         'Priority Support'
       ],
-      icon: <FontAwesome5 name="crown" size={14} color="#fff" />,
+      icon: <FontAwesome5 name="crown" size={11} color="#fff" />,
       gradient: ['#8C52FF', '#5CE1E6']
     }
   ];
@@ -80,7 +80,16 @@ export default function PlansScreen() {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>PLANS</Text>
         <TouchableOpacity style={styles.headerBtn} accessibilityLabel="Profile" onPress={() => {/* TODO: Add profile navigation logic */}}>
-          <Ionicons name="person" size={24} color="#4285F4" />
+          <View style={{
+            backgroundColor: '#23232a',
+            borderRadius: 16,
+            width: 32,
+            height: 32,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <MaterialIcons name="person-outline" size={20} color="#a0a0a0" />
+          </View>
         </TouchableOpacity>
       </View>
 
@@ -141,10 +150,9 @@ export default function PlansScreen() {
                   ) : (
                     <TouchableOpacity
                       style={[styles.cardBtn, {marginTop: 0, overflow: 'hidden', padding: 0}]}
-                      onPress={() => {
-                        if (plan.key === 'diamond') setShowFreeTrialText(true);
-                        setCurrentUserPlan(plan.key);
-                      }}
+                    onPress={() => {
+                      setCurrentUserPlan(plan.key);
+                    }}
                       activeOpacity={0.85}
                     >
                       <LinearGradient
@@ -166,17 +174,20 @@ export default function PlansScreen() {
               Bottom Call-to-Action Section
             ---------------------- */}
           <View style={styles.bottomCta}>
-            <TouchableOpacity
-              style={styles.trialBtn}
-              onPress={() => setShowFreeTrialText(true)}
-            >
-              <Text style={styles.trialBtnText}>Start Free Trial</Text>
-            </TouchableOpacity>
-            {showFreeTrialText && (
+            <View style={{ flex: 1 }}>
+              <TouchableOpacity
+                style={styles.trialBtn}
+                onPress={() => {
+                  if (!showFreeTrialText) setShowFreeTrialText(true);
+                }}
+                activeOpacity={showFreeTrialText ? 1 : 0.7}
+              >
+                <Text style={styles.trialBtnText}>Start Free Trial</Text>
+              </TouchableOpacity>
               <Text style={styles.trialText}>
                 7-day free diamond trial, then $19.99/month
               </Text>
-            )}
+            </View>
           </View>
 
         </ScrollView>
@@ -268,13 +279,14 @@ const styles = StyleSheet.create({
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   cardIcon: {
-    width: 16,
-    height: 16,
-    borderRadius: 5,
+    width: 22,
+    height: 22,
+    borderRadius: 7,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 6,
     overflow: 'hidden',
+    padding: 3,
   },
   cardTitle: { fontWeight: 'bold', color: colors.lightText, fontSize: 11, flexShrink: 1, flexWrap: 'wrap' },
   cardPrice: { color: '#fff', fontWeight: 'bold', fontSize: 10, flexShrink: 1, flexWrap: 'wrap' },

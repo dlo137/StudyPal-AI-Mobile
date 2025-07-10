@@ -16,7 +16,7 @@ const studyPalIcon = require('../../assets/studypal-icon.png');
  * Chat Screen Component
  * Main chat interface with AI assistant
  */
-export default function ChatScreen() {
+export default function ChatScreen({ navigation }) {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState(null);
@@ -89,15 +89,15 @@ export default function ChatScreen() {
   const renderHeader = () => (
     <View style={styles.headerContainer}>
       {/* Left: Logo, Title, New Chat */}
-      <View style={styles.headerLeft}>
-        <Text style={styles.headerTitleText}>StudyPal</Text>
-        <Image source={studyPalIcon} style={styles.headerLogo} resizeMode="contain" />
+      <View style={[styles.headerLeft, { gap: 2 }]}> 
+        <Text style={[styles.headerTitleText, { marginRight: 2 }]}>StudyPal</Text>
+        <Image source={studyPalIcon} style={[styles.headerLogo, { marginLeft: 0, marginRight: 2, width: 24, height: 24 }]} resizeMode="contain" />
         <TouchableOpacity
-          style={styles.headerNewChatBtn}
+          style={[styles.headerNewChatBtn, { backgroundColor: '#23232a', borderColor: '#23232a', width: 24, height: 24, borderRadius: 12, marginLeft: 5 }]}
           onPress={() => setMessages([])}
           accessibilityLabel="New Chat"
         >
-          <MaterialIcons name="add" size={20} color="#4285F4" />
+          <MaterialIcons name="add" size={16} color="#fff" />
         </TouchableOpacity>
       </View>
       {/* Right: Usage Counter, Upgrade, Profile */}
@@ -122,7 +122,7 @@ export default function ChatScreen() {
         {userPlan !== 'diamond' && (
           <TouchableOpacity
             style={styles.upgradeBtn}
-            onPress={() => {}}
+            onPress={() => navigation?.navigate && navigation.navigate('Plans')}
             accessibilityLabel="Upgrade"
           >
             <Text style={styles.upgradeBtnText}>Upgrade</Text>
@@ -133,9 +133,80 @@ export default function ChatScreen() {
           onPress={() => setMenuOpen(v => !v)}
           accessibilityLabel="Profile Menu"
         >
-          <MaterialIcons name="person" size={24} color="#4285F4" />
+          <View style={{
+            backgroundColor: '#23232a',
+            borderRadius: 16,
+            width: 32,
+            height: 32,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <MaterialIcons name="person-outline" size={20} color="#a0a0a0" />
+          </View>
         </TouchableOpacity>
-        {/* Profile menu dropdown can be implemented here if needed */}
+        {menuOpen && (
+          <View style={{
+            position: 'absolute',
+            top: 48,
+            right: 0,
+            width: 170,
+            backgroundColor: '#23232a',
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: '#333',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.2,
+            shadowRadius: 8,
+            elevation: 8,
+            zIndex: 100,
+          }}>
+            {!user && (
+              <>
+                <TouchableOpacity
+                  style={{ paddingVertical: 12, paddingHorizontal: 18, borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
+                  onPress={() => { setMenuOpen(false); navigation.navigate && navigation.navigate('Login'); }}
+                >
+                  <Text style={{ color: '#fff', fontSize: 15 }}>Login</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ paddingVertical: 12, paddingHorizontal: 18 }}
+                  onPress={() => { setMenuOpen(false); navigation.navigate && navigation.navigate('SignUp'); }}
+                >
+                  <Text style={{ color: '#fff', fontSize: 15 }}>Sign Up</Text>
+                </TouchableOpacity>
+              </>
+            )}
+            {user && (
+              <TouchableOpacity
+                style={{ paddingVertical: 12, paddingHorizontal: 18, borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
+                onPress={() => { setMenuOpen(false); navigation.navigate && navigation.navigate('Profile'); }}
+              >
+                <Text style={{ color: '#fff', fontSize: 15 }}>Profile</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={{ paddingVertical: 12, paddingHorizontal: 18 }}
+              onPress={() => { setMenuOpen(false); navigation.navigate && navigation.navigate('Plans'); }}
+            >
+              <Text style={{ color: '#fff', fontSize: 15 }}>Plans</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{ paddingVertical: 12, paddingHorizontal: 18, borderBottomLeftRadius: !user ? 12 : 0, borderBottomRightRadius: !user ? 12 : 0 }}
+              onPress={() => { setMenuOpen(false); navigation.navigate && navigation.navigate('Chat'); }}
+            >
+              <Text style={{ color: '#fff', fontSize: 15 }}>Chat</Text>
+            </TouchableOpacity>
+            {user && (
+              <TouchableOpacity
+                style={{ paddingVertical: 12, paddingHorizontal: 18, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}
+                onPress={() => { setMenuOpen(false); /* handleLogout() */ }}
+              >
+                <Text style={{ color: '#f43f5e', fontSize: 15 }}>Logout</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
       </View>
     </View>
   );
@@ -296,7 +367,7 @@ export default function ChatScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#000' },
+  safeArea: { flex: 1, backgroundColor: '#18181b' },
   container: { flex: 1 },
   centeredContainer: {
     flex: 1,

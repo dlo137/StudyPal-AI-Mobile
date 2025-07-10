@@ -4,3 +4,4 @@ export { default as ChatScreen } from './ChatScreen';
 export { default as ScanScreen } from './ScanScreen';
 export { default as PlansScreen } from './PlansScreen';
 export { default as ProfileScreen } from './ProfileScreen';
+export { default as MissionScreen } from './MissionScreen';

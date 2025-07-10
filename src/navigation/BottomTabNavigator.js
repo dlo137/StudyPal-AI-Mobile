@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialIcons } from '@expo/vector-icons';
 import { ChatScreen, ScanScreen, PlansScreen, ProfileScreen } from '../screens';
+import MissionScreen from '../screens/MissionScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -55,6 +56,7 @@ export default function BottomTabNavigator() {
       <Tab.Screen name="Scan" component={ScanScreen} />
       <Tab.Screen name="Plans" component={PlansScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
+      {/* MissionScreen is not shown in tabs, should be added to a stack navigator for navigation only */}
     </Tab.Navigator>
   );
 }
