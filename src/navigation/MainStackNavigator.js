@@ -3,6 +3,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { BottomTabNavigator } from '.';
 import MissionScreen from '../screens/MissionScreen';
 import ContactScreen from '../screens/ContactScreen';
+import LoginScreen from '../screens/LoginScreen';
+import SignUpScreen from '../screens/SignUpScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -16,6 +18,8 @@ export default function MainStackNavigator() {
       <Stack.Screen name="MainTabs" component={BottomTabNavigator} />
       <Stack.Screen name="Mission" component={MissionScreen} />
       <Stack.Screen name="ContactScreen" component={ContactScreen} />
+      <Stack.Screen name="LoginScreen" component={LoginScreen} />
+      <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
     </Stack.Navigator>
   );
 }

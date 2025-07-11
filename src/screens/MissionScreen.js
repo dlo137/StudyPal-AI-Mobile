@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
 import { Ionicons, MaterialCommunityIcons, Feather, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
+import ProfileDropdownMenu from '../components/ProfileDropdownMenu';
 import colors from '../theme/colors';
 
 export default function MissionScreen({ navigation }) {
@@ -16,62 +17,7 @@ export default function MissionScreen({ navigation }) {
           <Feather name="x" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>MISSION</Text>
-        <TouchableOpacity style={styles.headerBtn} onPress={() => setMenuOpen(v => !v)}>
-          <View style={{
-            backgroundColor: '#23232a',
-            borderRadius: 16,
-            width: 32,
-            height: 32,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <MaterialIcons name="person-outline" size={20} color="#a0a0a0" />
-          </View>
-        </TouchableOpacity>
-        {/* Dropdown menu */}
-        {menuOpen && (
-          <View style={{
-            position: 'absolute',
-            top: 48,
-            right: 16,
-            width: 170,
-            backgroundColor: '#23232a',
-            borderRadius: 12,
-            borderWidth: 1,
-            borderColor: '#333',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.2,
-            shadowRadius: 8,
-            elevation: 8,
-            zIndex: 100,
-          }}>
-            <TouchableOpacity
-              style={{ paddingVertical: 12, paddingHorizontal: 18, borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
-              onPress={() => { setMenuOpen(false); navigation.navigate('Profile'); }}
-            >
-              <Text style={{ color: '#fff', fontSize: 15 }}>Profile</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ paddingVertical: 12, paddingHorizontal: 18 }}
-              onPress={() => { setMenuOpen(false); navigation.navigate('Plans'); }}
-            >
-              <Text style={{ color: '#fff', fontSize: 15 }}>Plans</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ paddingVertical: 12, paddingHorizontal: 18 }}
-              onPress={() => { setMenuOpen(false); navigation.navigate('Chat'); }}
-            >
-              <Text style={{ color: '#fff', fontSize: 15 }}>Chat</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ paddingVertical: 12, paddingHorizontal: 18, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}
-              onPress={() => { setMenuOpen(false); /* handleLogout() */ }}
-            >
-              <Text style={{ color: '#f43f5e', fontSize: 15 }}>Logout</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        <ProfileDropdownMenu navigation={navigation} user={null} />
       </View>
 
       {/* Mission content (converted from MissionStatement.tsx) */}

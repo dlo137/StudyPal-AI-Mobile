@@ -7,6 +7,7 @@ import * as ReactNative from 'react-native';
 const { View, Text, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, StyleSheet, SafeAreaView, Image, Pressable } = ReactNative;
 
 import React, { useState, useRef, useEffect } from 'react';
+import { Animated } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 
 // Import the StudyPal logo from the assets folder
@@ -16,7 +17,37 @@ const studyPalIcon = require('../../assets/studypal-icon.png');
  * Chat Screen Component
  * Main chat interface with AI assistant
  */
+
+
+// --- Move subjectOptions and subjectRows above the component, but keep all hooks and logic inside ---
+const subjectOptions = [
+  { key: 'Math', color: '#4F9DFE' },         // more vibrant blue
+  { key: 'Science', color: '#3DDC97' },      // more vibrant green
+  { key: 'Literature', color: '#FF5C8A' },   // more vibrant red/pink
+  { key: 'Programming', color: '#FFD166' },  // more vibrant orange/yellow
+  { key: 'Health', color: '#A084EE' },       // more vibrant purple
+  { key: 'Physics', color: '#38CFF5' },      // more vibrant cyan
+  { key: 'Chemistry', color: '#B6E944' },    // more vibrant lime
+  { key: 'Biology', color: '#FF8FCF' },      // more vibrant pink
+  { key: 'Fitness', color: '#2EE6C5' },      // more vibrant teal
+  { key: 'History', color: '#FFD166' },      // more vibrant orange/yellow (same as Programming)
+];
+
+// Place History on the second row
+const subjectRows = [
+  subjectOptions.slice(0, 5), // Math, Science, Literature, Programming, Health
+  subjectOptions.slice(5, 10) // Physics, Chemistry, Biology, Fitness, History
+];
+
 export default function ChatScreen({ navigation }) {
+  // State to force welcome animation to re-run
+  const [welcomeAnimKey, setWelcomeAnimKey] = useState(0);
+  // Helper to reset all subject bubble animations and trigger animation
+  const resetSubjectAnims = () => {
+    subjectAnim.forEach(anim => anim.setValue(0));
+    subjectAnim2.forEach(anim => anim.setValue(0));
+    setWelcomeAnimKey(k => k + 1);
+  };
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState(null);
@@ -27,29 +58,13 @@ export default function ChatScreen({ navigation }) {
   const user = null; // Replace with user state
   const userPlan = 'free'; // Replace with plan state
 
+  // Animation state for subject bubbles (must be after subjectRows is defined)
+  const subjectAnim = useRef(subjectRows[0].map(() => new Animated.Value(0))).current;
+  const subjectAnim2 = useRef(subjectRows[1].map(() => new Animated.Value(0))).current;
+
   useEffect(() => {
     flatListRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
-
-  // Split subject options into two rows for display
-  const subjectOptions = [
-    { key: 'Math', color: '#4F9DFE' },         // more vibrant blue
-    { key: 'Science', color: '#3DDC97' },      // more vibrant green
-    { key: 'Literature', color: '#FF5C8A' },   // more vibrant red/pink
-    { key: 'Programming', color: '#FFD166' },  // more vibrant orange/yellow
-    { key: 'Health', color: '#A084EE' },       // more vibrant purple
-    { key: 'Physics', color: '#38CFF5' },      // more vibrant cyan
-    { key: 'Chemistry', color: '#B6E944' },    // more vibrant lime
-    { key: 'Biology', color: '#FF8FCF' },      // more vibrant pink
-    { key: 'Fitness', color: '#2EE6C5' },      // more vibrant teal
-    { key: 'History', color: '#FFD166' },      // more vibrant orange/yellow (same as Programming)
-  ];
-
-  // Place History on the second row
-  const subjectRows = [
-    subjectOptions.slice(0, 5), // Math, Science, Literature, Programming, Health
-    subjectOptions.slice(5, 10) // Physics, Chemistry, Biology, Fitness, History
-  ];
 
   const sendMessage = () => {
     if (!input.trim()) return;
@@ -94,7 +109,10 @@ export default function ChatScreen({ navigation }) {
         <Image source={studyPalIcon} style={[styles.headerLogo, { marginLeft: 0, marginRight: 2, width: 24, height: 24 }]} resizeMode="contain" />
         <TouchableOpacity
           style={[styles.headerNewChatBtn, { backgroundColor: '#23232a', borderColor: '#23232a', width: 24, height: 24, borderRadius: 12, marginLeft: 5 }]}
-          onPress={() => setMessages([])}
+          onPress={() => {
+            resetSubjectAnims();
+            setMessages([]);
+          }}
           accessibilityLabel="New Chat"
         >
           <MaterialIcons name="add" size={16} color="#fff" />
@@ -145,72 +163,103 @@ export default function ChatScreen({ navigation }) {
           </View>
         </TouchableOpacity>
         {menuOpen && (
-          <View style={{
-            position: 'absolute',
-            top: 48,
-            right: 0,
-            width: 170,
-            backgroundColor: '#23232a',
-            borderRadius: 12,
-            borderWidth: 1,
-            borderColor: '#333',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.2,
-            shadowRadius: 8,
-            elevation: 8,
-            zIndex: 100,
-          }}>
-            {!user && (
-              <>
+          <>
+            {/* Overlay to close menu when clicking outside */}
+            <Pressable
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 99,
+              }}
+              onPress={() => setMenuOpen(false)}
+            />
+            {/* Dropdown menu above overlay */}
+            <View
+              style={{
+                position: 'absolute',
+                top: 48,
+                right: 0,
+                width: 170,
+                backgroundColor: '#23232a',
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: '#333',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 8,
+                elevation: 8,
+                zIndex: 100,
+              }}
+              onStartShouldSetResponder={() => true}
+            >
+              {/* Dropdown menu navigation logic */}
+              {!user && (
+                <>
+                  <TouchableOpacity
+                    style={{ paddingVertical: 12, paddingHorizontal: 18, borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
+                    onPress={() => { setMenuOpen(false); navigation.navigate && navigation.navigate('LoginScreen'); }}
+                  >
+                    <Text style={{ color: '#fff', fontSize: 15 }}>Login</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{ paddingVertical: 12, paddingHorizontal: 18 }}
+                    onPress={() => { setMenuOpen(false); navigation.navigate && navigation.navigate('SignUpScreen'); }}
+                  >
+                    <Text style={{ color: '#fff', fontSize: 15 }}>Sign Up</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+              {user && (
                 <TouchableOpacity
                   style={{ paddingVertical: 12, paddingHorizontal: 18, borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
-                  onPress={() => { setMenuOpen(false); navigation.navigate && navigation.navigate('Login'); }}
+                  onPress={() => { setMenuOpen(false); navigation.navigate && navigation.navigate('Profile'); }}
                 >
-                  <Text style={{ color: '#fff', fontSize: 15 }}>Login</Text>
+                  <Text style={{ color: '#fff', fontSize: 15 }}>Profile</Text>
                 </TouchableOpacity>
+              )}
+              {/* Removed Plans and Chat options from dropdown menu as requested */}
+              {user && (
                 <TouchableOpacity
-                  style={{ paddingVertical: 12, paddingHorizontal: 18 }}
-                  onPress={() => { setMenuOpen(false); navigation.navigate && navigation.navigate('SignUp'); }}
+                  style={{ paddingVertical: 12, paddingHorizontal: 18, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}
+                  onPress={() => { setMenuOpen(false); /* handleLogout() */ }}
                 >
-                  <Text style={{ color: '#fff', fontSize: 15 }}>Sign Up</Text>
+                  <Text style={{ color: '#f43f5e', fontSize: 15 }}>Logout</Text>
                 </TouchableOpacity>
-              </>
-            )}
-            {user && (
-              <TouchableOpacity
-                style={{ paddingVertical: 12, paddingHorizontal: 18, borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
-                onPress={() => { setMenuOpen(false); navigation.navigate && navigation.navigate('Profile'); }}
-              >
-                <Text style={{ color: '#fff', fontSize: 15 }}>Profile</Text>
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity
-              style={{ paddingVertical: 12, paddingHorizontal: 18 }}
-              onPress={() => { setMenuOpen(false); navigation.navigate && navigation.navigate('Plans'); }}
-            >
-              <Text style={{ color: '#fff', fontSize: 15 }}>Plans</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ paddingVertical: 12, paddingHorizontal: 18, borderBottomLeftRadius: !user ? 12 : 0, borderBottomRightRadius: !user ? 12 : 0 }}
-              onPress={() => { setMenuOpen(false); navigation.navigate && navigation.navigate('Chat'); }}
-            >
-              <Text style={{ color: '#fff', fontSize: 15 }}>Chat</Text>
-            </TouchableOpacity>
-            {user && (
-              <TouchableOpacity
-                style={{ paddingVertical: 12, paddingHorizontal: 18, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}
-                onPress={() => { setMenuOpen(false); /* handleLogout() */ }}
-              >
-                <Text style={{ color: '#f43f5e', fontSize: 15 }}>Logout</Text>
-              </TouchableOpacity>
-            )}
-          </View>
+              )}
+            </View>
+          </>
         )}
       </View>
     </View>
   );
 
+
+  // Animate subject bubbles when welcome screen is shown
+  useEffect(() => {
+    if (messages.length === 0) {
+      // Reset all anims to 0 before starting animation
+      subjectAnim.forEach(anim => anim.setValue(0));
+      subjectAnim2.forEach(anim => anim.setValue(0));
+      const allAnims = [...subjectAnim, ...subjectAnim2];
+      Animated.stagger(70, allAnims.map((anim, idx) =>
+        Animated.spring(anim, {
+          toValue: 1,
+          useNativeDriver: true,
+          speed: 12,
+          bounciness: 8,
+          delay: idx * 30,
+        })
+      )).start();
+    } else {
+      // Reset anims if leaving welcome screen
+      subjectAnim.forEach(anim => anim.setValue(0));
+      subjectAnim2.forEach(anim => anim.setValue(0));
+    }
+  }, [messages.length, welcomeAnimKey]);
 
   // --- MAIN SECTION: Welcome screen (no messages) ---
   // Shows centered title, subject bubbles in two rows, and input bar
@@ -226,7 +275,7 @@ export default function ChatScreen({ navigation }) {
             <View style={[styles.centeredContent, {paddingHorizontal: 16}]}> 
               {/* Welcome title */}
               <Text style={styles.welcomeTitle}>How can I help you?</Text>
-              {/* Subject bubbles in two rows */}
+              {/* Subject bubbles in two rows with fade/surf effect */}
               <View style={{ width: '100%', alignSelf: 'center', paddingHorizontal: 4 }}>
                 {subjectRows.map((row, idx) => (
                   <View
@@ -238,39 +287,62 @@ export default function ChatScreen({ navigation }) {
                       alignItems: 'center',
                       marginVertical: 2,
                       width: '100%',
-                      gap: 0, // for web, but not supported on mobile
+                      gap: 0,
                     }}
                   >
-                    {row.map((subject, sidx) => (
-                      <TouchableOpacity
-                        key={subject.key}
-                        style={[
-                          styles.subjectBubbleSmall,
-                          {
-                            backgroundColor: subject.color,
-                            minWidth: 36,
-                            alignSelf: 'center',
-                            marginLeft: sidx === 0 ? 0 : 2,
-                            marginRight: sidx === row.length - 1 ? 0 : 2,
-                            marginVertical: 1,
-                            paddingHorizontal: 10,
-                            paddingVertical: 7,
-                          },
-                        ]}
-                        onPress={() => handleSubjectSelect(subject.key)}
-                      >
-                        <Text
-                          style={[
-                            styles.subjectTextSmall,
-                            { fontSize: 12, color: 'rgba(0,0,0,0.65 )', fontWeight: 'bold' }
-                          ]}
-                          numberOfLines={1}
-                          ellipsizeMode="tail"
+                    {row.map((subject, sidx) => {
+                      const anim = idx === 0 ? subjectAnim[sidx] : subjectAnim2[sidx];
+                      return (
+                        <Animated.View
+                          key={subject.key}
+                          style={{
+                            opacity: anim,
+                            transform: [
+                              {
+                                translateY: anim.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: [40, 0],
+                                }),
+                              },
+                              {
+                                scale: anim.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: [0.7, 1],
+                                }),
+                              },
+                            ],
+                          }}
                         >
-                          {subject.key}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
+                          <TouchableOpacity
+                            style={[
+                              styles.subjectBubbleSmall,
+                              {
+                                backgroundColor: subject.color,
+                                minWidth: 36,
+                                alignSelf: 'center',
+                                marginLeft: sidx === 0 ? 0 : 2,
+                                marginRight: sidx === row.length - 1 ? 0 : 2,
+                                marginVertical: 1,
+                                paddingHorizontal: 10,
+                                paddingVertical: 7,
+                              },
+                            ]}
+                            onPress={() => handleSubjectSelect(subject.key)}
+                          >
+                            <Text
+                              style={[
+                                styles.subjectTextSmall,
+                                { fontSize: 12, color: 'rgba(0,0,0,0.65 )', fontWeight: 'bold' }
+                              ]}
+                              numberOfLines={1}
+                              ellipsizeMode="tail"
+                            >
+                              {subject.key}
+                            </Text>
+                          </TouchableOpacity>
+                        </Animated.View>
+                      );
+                    })}
                   </View>
                 ))}
               </View>
@@ -368,7 +440,10 @@ export default function ChatScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#18181b' },
-  container: { flex: 1 },
+  container: {
+    flex: 1,
+    padding: 16, // Add padding all around the body section
+  },
   centeredContainer: {
     flex: 1,
     justifyContent: 'center',

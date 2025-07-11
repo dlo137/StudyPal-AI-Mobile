@@ -13,50 +13,42 @@ const Tab = createBottomTabNavigator();
 export default function BottomTabNavigator() {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-
-          switch (route.name) {
-            case 'Chat':
-              iconName = 'chat';
-              break;
-            case 'Scan':
-              iconName = 'document-scanner';
-              break;
-            case 'Plans':
-              iconName = 'assignment';
-              break;
-            case 'Profile':
-              iconName = 'person';
-              break;
-            default:
-              iconName = 'circle';
-          }
-
-          return <MaterialIcons name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: '#ffffff',
-        tabBarInactiveTintColor: '#888888',
-        tabBarStyle: {
-          backgroundColor: '#000000',
-          borderTopWidth: 0,
-          height: 80,
-          paddingBottom: 8,
-          paddingTop: 8,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '600',
-        },
-        headerShown: false,
-      })}
+      screenOptions={({ route }) => {
+        let iconName = 'circle';
+        let IconComponent = MaterialIcons;
+        if (route.name === 'Chat') {
+          iconName = 'chat';
+        } else if (route.name === 'Scan') {
+          iconName = 'scan-outline';
+          IconComponent = require('@expo/vector-icons').Ionicons;
+        } else if (route.name === 'Plans') {
+          iconName = 'star-outline';
+        } else if (route.name === 'Profile') {
+          iconName = 'person-outline';
+        }
+        return {
+          tabBarIcon: ({ color, size }) => <IconComponent name={iconName} size={size} color={color} />,
+          tabBarActiveTintColor: '#ffffff',
+          tabBarInactiveTintColor: '#888888',
+          tabBarStyle: {
+            backgroundColor: '#000000',
+            borderTopWidth: 0,
+            height: 80,
+            paddingBottom: 8,
+            paddingTop: 8,
+          },
+          tabBarLabelStyle: {
+            fontSize: 12,
+            fontWeight: '600',
+          },
+          headerShown: false,
+        };
+      }}
     >
       <Tab.Screen name="Chat" component={ChatScreen} />
       <Tab.Screen name="Scan" component={ScanScreen} />
       <Tab.Screen name="Plans" component={PlansScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
-      {/* MissionScreen is not shown in tabs, should be added to a stack navigator for navigation only */}
     </Tab.Navigator>
   );
 }

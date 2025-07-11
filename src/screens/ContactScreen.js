@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
 import { Feather, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import ProfileDropdownMenu from '../components/ProfileDropdownMenu';
 
 /**
  * Contact Screen Component
@@ -15,25 +16,58 @@ export default function ContactScreen({ navigation }) {
           <Feather name="x" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>CONTACT</Text>
-        <TouchableOpacity style={styles.headerBtn}>
-          <View style={{
-            backgroundColor: '#23232a',
-            borderRadius: 16,
-            width: 32,
-            height: 32,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <MaterialIcons name="person-outline" size={20} color="#a0a0a0" />
-          </View>
-        </TouchableOpacity>
+        <ProfileDropdownMenu navigation={navigation} user={null} />
       </View>
       {/* Main content */}
-      <View style={styles.container}>
-        <Text style={styles.title}>Contact Us</Text>
-        <Text style={styles.subtitle}>Get in touch with our support team</Text>
-        <Text style={styles.info}>Email: support@studypal.ai</Text>
-        <Text style={styles.info}>Phone: +1 (555) 123-4567</Text>
+      <View style={styles.bodyContainer}>
+        {/* Contact Hero Section */}
+        <View style={styles.heroSection}>
+          <MaterialIcons name="support-agent" size={48} color="#8C52FF" style={{ marginBottom: 12 }} />
+          <Text style={styles.heroTitle}>Contact Us</Text>
+          <Text style={styles.heroSubtitle}>
+            We're here to help! Reach out to our support team for assistance, feedback, or partnership inquiries.
+          </Text>
+        </View>
+
+        {/* Contact Info Grid */}
+        <View style={styles.infoGrid}>
+          <View style={styles.infoCard}>
+            <MaterialIcons name="email" size={24} color="#5CE1E6" style={{ marginBottom: 6 }} />
+            <Text style={styles.infoTitle}>Email</Text>
+            <Text style={styles.infoText}>support@studypal.ai</Text>
+          </View>
+          <View style={styles.infoCard}>
+            <MaterialIcons name="phone" size={24} color="#8C52FF" style={{ marginBottom: 6 }} />
+            <Text style={styles.infoTitle}>Phone</Text>
+            <Text style={styles.infoText}>+1 (555) 123-4567</Text>
+          </View>
+          <View style={styles.infoCard}>
+            <MaterialIcons name="location-on" size={24} color="#FFD166" style={{ marginBottom: 6 }} />
+            <Text style={styles.infoTitle}>Address</Text>
+            <Text style={styles.infoText}>123 StudyPal Lane, Suite 100, Edutown, USA</Text>
+          </View>
+        </View>
+
+        {/* Support Details */}
+        <View style={styles.supportDetailCard}>
+          <Text style={styles.supportDetailTitle}>Support Hours</Text>
+          <Text style={styles.supportDetailText}>Monday - Friday: 9am - 6pm (EST)</Text>
+          <Text style={styles.supportDetailText}>Saturday: 10am - 4pm (EST)</Text>
+          <Text style={styles.supportDetailText}>Sunday: Closed</Text>
+        </View>
+
+        {/* Call to Action */}
+        <View style={styles.ctaSection}>
+          <Text style={styles.ctaTitle}>Need Immediate Help?</Text>
+          <Text style={styles.ctaSubtitle}>
+            Chat with our AI assistant or send us a message anytime.
+          </Text>
+          <TouchableOpacity style={styles.ctaButton} onPress={() => navigation.navigate('Chat')}>
+            <View style={styles.ctaButtonGradient}>
+              <Text style={styles.ctaButtonText}>Start Chat</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Bottom navigation bar */}
@@ -74,10 +108,118 @@ const styles = StyleSheet.create({
   },
   headerBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontWeight: 'bold', fontSize: 18, color: '#fff', letterSpacing: 1 },
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#8C52FF', marginBottom: 12 },
-  subtitle: { fontSize: 16, color: '#fff', marginBottom: 18 },
-  info: { fontSize: 15, color: '#a0a0a0', marginBottom: 8 },
+  bodyContainer: {
+    flex: 1,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 8,
+    backgroundColor: '#141417',
+  },
+  heroSection: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  heroTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#8C52FF',
+    textAlign: 'center',
+  },
+  heroSubtitle: {
+    fontSize: 16,
+    color: '#fff',
+    textAlign: 'center',
+    maxWidth: 340,
+    marginBottom: 8,
+  },
+  infoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 32,
+  },
+  infoCard: {
+    backgroundColor: '#23232a',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#333',
+    padding: 18,
+    width: '30%',
+    minWidth: 110,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  infoTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  infoText: {
+    fontSize: 14,
+    color: '#a0a0a0',
+    textAlign: 'center',
+  },
+  supportDetailCard: {
+    backgroundColor: '#23232a',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#333',
+    padding: 20,
+    marginBottom: 24,
+    alignItems: 'center',
+  },
+  supportDetailTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#8C52FF',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  supportDetailText: {
+    fontSize: 14,
+    color: '#a0a0a0',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  ctaSection: {
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  ctaTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  ctaSubtitle: {
+    fontSize: 15,
+    color: '#a0a0a0',
+    marginBottom: 12,
+    textAlign: 'center',
+    maxWidth: 320,
+  },
+  ctaButton: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  ctaButtonGradient: {
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#8C52FF',
+  },
+  ctaButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+    letterSpacing: 0.5,
+  },
   bottomNavBar: {
     flexDirection: 'row',
     justifyContent: 'space-around',

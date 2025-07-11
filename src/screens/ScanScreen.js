@@ -68,9 +68,7 @@ const ScanScreen = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerBtn}>
-          <Ionicons name="close" size={24} color="#fff" />
-        </TouchableOpacity>
+        <View style={{ width: 32, height: 32 }} />
         <Text style={styles.headerTitle}>SCANNER</Text>
         <TouchableOpacity style={styles.headerBtn}>
           <View style={styles.profileCircle}>

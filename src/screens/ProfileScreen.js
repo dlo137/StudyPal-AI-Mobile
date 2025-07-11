@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { View, Text, StyleSheet, TouchableOpacity, Switch, SafeAreaView, ScrollView } from 'react-native';
 import { Ionicons, MaterialCommunityIcons, Feather, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
+import ProfileDropdownMenu from '../components/ProfileDropdownMenu';
 import colors from '../theme/colors';
 
 /**
@@ -42,22 +43,9 @@ export default function ProfileScreen({ navigation }) {
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.headerBtn}>
-            <Feather name="x" size={24} color="#fff" />
-          </TouchableOpacity>
+          <View style={{ width: 32, height: 32 }} />
           <Text style={styles.headerTitle}>PROFILE</Text>
-          <TouchableOpacity style={styles.headerBtn}>
-            <View style={{
-              backgroundColor: '#23232a',
-              borderRadius: 16,
-              width: 32,
-              height: 32,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              <MaterialIcons name="person-outline" size={20} color="#a0a0a0" />
-            </View>
-          </TouchableOpacity>
+          <ProfileDropdownMenu navigation={navigation} user={user} />
         </View>
 
         {/* Avatar and Info */}
@@ -78,7 +66,7 @@ export default function ProfileScreen({ navigation }) {
               }}
               pointerEvents="none"
             />
-            <Text style={styles.avatarText}>{getUserInitials()}</Text>
+            <FontAwesome5 name="user" size={40} color="#fff" />
           </View>
           <Text style={styles.name}>
             User

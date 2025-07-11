@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, FontAwesome5, Feather, MaterialIcons } from '@expo/vector-icons';
+import ProfileDropdownMenu from '../components/ProfileDropdownMenu';
 import colors from '../theme/colors';
 
 /**
@@ -15,7 +16,11 @@ export default function PlansScreen() {
   // ----------------------
   // State Management
   // ----------------------
-  const [currentUserPlan, setCurrentUserPlan] = useState('free');
+  // TODO: Replace with actual user state from context/auth
+  const user = null; // Simulate not signed in
+  const [currentUserPlan, setCurrentUserPlan] = useState(user ? 'gold' : 'free');
+  // Simulate navigation function (replace with your navigation logic)
+  const navigation = { navigate: (route) => { /* TODO: Replace with navigation logic */ } };
   const [showFreeTrialText, setShowFreeTrialText] = useState(false);
 
   // ----------------------
@@ -75,22 +80,9 @@ export default function PlansScreen() {
           Header Section
         ---------------------- */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerBtn} accessibilityLabel="Close" onPress={() => {/* TODO: Add navigation or modal close logic */}}>
-          <Ionicons name="close" size={24} color="#fff" />
-        </TouchableOpacity>
+        <View style={{ width: 32, height: 32 }} />
         <Text style={styles.headerTitle}>PLANS</Text>
-        <TouchableOpacity style={styles.headerBtn} accessibilityLabel="Profile" onPress={() => {/* TODO: Add profile navigation logic */}}>
-          <View style={{
-            backgroundColor: '#23232a',
-            borderRadius: 16,
-            width: 32,
-            height: 32,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <MaterialIcons name="person-outline" size={20} color="#a0a0a0" />
-          </View>
-        </TouchableOpacity>
+        <ProfileDropdownMenu navigation={navigation} user={null} dropdownStyle={{ top: 48 }} />
       </View>
 
       {/* ----------------------
@@ -150,9 +142,13 @@ export default function PlansScreen() {
                   ) : (
                     <TouchableOpacity
                       style={[styles.cardBtn, {marginTop: 0, overflow: 'hidden', padding: 0}]}
-                    onPress={() => {
-                      setCurrentUserPlan(plan.key);
-                    }}
+                      onPress={() => {
+                        if (!user && plan.key !== 'free') {
+                          navigation.navigate('LoginScreen');
+                        } else {
+                          setCurrentUserPlan(plan.key);
+                        }
+                      }}
                       activeOpacity={0.85}
                     >
                       <LinearGradient
@@ -293,7 +289,7 @@ const styles = StyleSheet.create({
   cardFeatures: { marginTop: 6, marginBottom: 8 },
   featureRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 3 },
   featureDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: colors.accentPurple, marginRight: 5 },
-  featureText: { fontSize: 12, color: '#888888', flexShrink: 1, flexWrap: 'wrap' },
+  featureText: { fontSize: 10, color: '#888888', flexShrink: 1, flexWrap: 'wrap' },
   cardBtn: {
     marginTop: 1,
     marginBottom: 1,
