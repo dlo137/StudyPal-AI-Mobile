@@ -12,15 +12,11 @@ import colors from '../theme/colors';
  * Study plans and subscription management
  */
 
-export default function PlansScreen() {
-  // ----------------------
-  // State Management
-  // ----------------------
+export default function PlansScreen({ navigation, route }) {
   // TODO: Replace with actual user state from context/auth
-  const user = null; // Simulate not signed in
+  // Set user to null to simulate not logged in
+  const user = null;
   const [currentUserPlan, setCurrentUserPlan] = useState(user ? 'gold' : 'free');
-  // Simulate navigation function (replace with your navigation logic)
-  const navigation = { navigate: (route) => { /* TODO: Replace with navigation logic */ } };
   const [showFreeTrialText, setShowFreeTrialText] = useState(false);
 
   // ----------------------
@@ -82,7 +78,7 @@ export default function PlansScreen() {
       <View style={styles.header}>
         <View style={{ width: 32, height: 32 }} />
         <Text style={styles.headerTitle}>PLANS</Text>
-        <ProfileDropdownMenu navigation={navigation} user={null} dropdownStyle={{ top: 48 }} />
+        <ProfileDropdownMenu navigation={navigation} user={user} dropdownStyle={{ top: 48 }} />
       </View>
 
       {/* ----------------------

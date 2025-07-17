@@ -7,8 +7,12 @@ import * as ReactNative from 'react-native';
 const { View, Text, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, StyleSheet, SafeAreaView, Image, Pressable } = ReactNative;
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useIsFocused } from '@react-navigation/native';
+import { supabase } from '../../supabase';
 import { Animated } from 'react-native';
+
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import ProfileDropdownMenu from '../components/ProfileDropdownMenu';
 
 // Import the StudyPal logo from the assets folder
 const studyPalIcon = require('../../assets/studypal-icon.png');
@@ -55,8 +59,51 @@ export default function ChatScreen({ navigation }) {
   const flatListRef = useRef(null);
   // Dummy usage and plan data for demonstration
   const dailyUsage = { questionsAsked: 2, remaining: 3, limit: 5 };
-  const user = null; // Replace with user state
-  const userPlan = 'free'; // Replace with plan state
+  // User state from Supabase
+  const [user, setUser] = useState(null);
+  const [userPlan, setUserPlan] = useState('free'); // Replace with plan state
+
+  // Fetch user from Supabase on mount and when screen is focused
+  const isFocused = useIsFocused();
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (user) {
+        // Try to fetch full profile from Supabase 'profiles' table
+        let profile = null;
+        try {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+          if (profileData) {
+            profile = profileData;
+          }
+        } catch (e) {
+          // Ignore profile fetch errors
+        }
+        // Merge profile info into user object if available
+        if (profile) {
+          user.user_metadata = {
+            ...(user.user_metadata || {}),
+            name: profile.name || user.user_metadata?.name,
+            email: profile.email || user.email,
+            // Add any other fields you want from profile
+          };
+        } else {
+          // Defensive: If user.user_metadata is missing, fallback to email
+          if (!user.user_metadata) {
+            user.user_metadata = { email: user.email };
+          }
+        }
+        setUser(user);
+      } else {
+        setUser(null);
+      }
+    };
+    fetchUser();
+  }, [isFocused]);
 
   // Animation state for subject bubbles (must be after subjectRows is defined)
   const subjectAnim = useRef(subjectRows[0].map(() => new Animated.Value(0))).current;
@@ -146,93 +193,7 @@ export default function ChatScreen({ navigation }) {
             <Text style={styles.upgradeBtnText}>Upgrade</Text>
           </TouchableOpacity>
         )}
-        <TouchableOpacity
-          style={styles.profileBtn}
-          onPress={() => setMenuOpen(v => !v)}
-          accessibilityLabel="Profile Menu"
-        >
-          <View style={{
-            backgroundColor: '#23232a',
-            borderRadius: 16,
-            width: 32,
-            height: 32,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <MaterialIcons name="person-outline" size={20} color="#a0a0a0" />
-          </View>
-        </TouchableOpacity>
-        {menuOpen && (
-          <>
-            {/* Overlay to close menu when clicking outside */}
-            <Pressable
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                zIndex: 99,
-              }}
-              onPress={() => setMenuOpen(false)}
-            />
-            {/* Dropdown menu above overlay */}
-            <View
-              style={{
-                position: 'absolute',
-                top: 48,
-                right: 0,
-                width: 170,
-                backgroundColor: '#23232a',
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: '#333',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.2,
-                shadowRadius: 8,
-                elevation: 8,
-                zIndex: 100,
-              }}
-              onStartShouldSetResponder={() => true}
-            >
-              {/* Dropdown menu navigation logic */}
-              {!user && (
-                <>
-                  <TouchableOpacity
-                    style={{ paddingVertical: 12, paddingHorizontal: 18, borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
-                    onPress={() => { setMenuOpen(false); navigation.navigate && navigation.navigate('LoginScreen'); }}
-                  >
-                    <Text style={{ color: '#fff', fontSize: 15 }}>Login</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={{ paddingVertical: 12, paddingHorizontal: 18 }}
-                    onPress={() => { setMenuOpen(false); navigation.navigate && navigation.navigate('SignUpScreen'); }}
-                  >
-                    <Text style={{ color: '#fff', fontSize: 15 }}>Sign Up</Text>
-                  </TouchableOpacity>
-                </>
-              )}
-              {user && (
-                <TouchableOpacity
-                  style={{ paddingVertical: 12, paddingHorizontal: 18, borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
-                  onPress={() => { setMenuOpen(false); navigation.navigate && navigation.navigate('Profile'); }}
-                >
-                  <Text style={{ color: '#fff', fontSize: 15 }}>Profile</Text>
-                </TouchableOpacity>
-              )}
-              {/* Removed Plans and Chat options from dropdown menu as requested */}
-              {user && (
-                <TouchableOpacity
-                  style={{ paddingVertical: 12, paddingHorizontal: 18, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}
-                  onPress={() => { setMenuOpen(false); /* handleLogout() */ }}
-                >
-                  <Text style={{ color: '#f43f5e', fontSize: 15 }}>Logout</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </>
-        )}
+        <ProfileDropdownMenu navigation={navigation} user={user} />
       </View>
     </View>
   );

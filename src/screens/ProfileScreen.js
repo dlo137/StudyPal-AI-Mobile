@@ -1,7 +1,9 @@
 
 
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useIsFocused } from '@react-navigation/native';
+import { supabase } from '../../supabase';
 import { LinearGradient } from 'expo-linear-gradient';
 import { View, Text, StyleSheet, TouchableOpacity, Switch, SafeAreaView, ScrollView } from 'react-native';
 import { Ionicons, MaterialCommunityIcons, Feather, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
@@ -12,23 +14,64 @@ import colors from '../theme/colors';
  * Profile Screen Component
  * User profile and settings
  */
-export default function ProfileScreen({ navigation }) {
-  // Mock user and plan for demonstration
-  const user = { email: 'user@email.com', user_metadata: { firstName: 'Ada', lastName: 'Wong' } };
+export default function ProfileScreen({ navigation, route }) {
+  // Get user from Supabase
+  const [user, setUser] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [userPlan, setUserPlan] = useState('free');
+  const isFocused = useIsFocused();
 
-  // Get user initials for avatar
-  const getUserInitials = () => {
-    if (!user) return 'U';
-    const metadata = user.user_metadata;
-    if (metadata?.firstName && metadata?.lastName) {
-      return `${metadata.firstName.charAt(0)}${metadata.lastName.charAt(0)}`.toUpperCase();
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Try to fetch full profile from Supabase 'profiles' table
+        let profile = null;
+        try {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+          if (profileData) {
+            profile = profileData;
+          }
+        } catch (e) {
+          // Ignore profile fetch errors
+        }
+        // Merge profile info into user object if available
+        if (profile) {
+          user.user_metadata = {
+            ...(user.user_metadata || {}),
+            name: profile.name || user.user_metadata?.name,
+            email: profile.email || user.email,
+          };
+        } else {
+          if (!user.user_metadata) {
+            user.user_metadata = { email: user.email };
+          }
+        }
+        setUser(user);
+      } else {
+        setUser(null);
+      }
+    };
+    fetchUser();
+  }, [isFocused]);
+
+  // Get user display name: Prefer name from user_metadata, fallback to email
+  const getUserDisplayName = () => {
+    if (!user) return 'User';
+    if (user.user_metadata && user.user_metadata.name) {
+      return user.user_metadata.name;
+    }
+    if (user.user_metadata && user.user_metadata.full_name) {
+      return user.user_metadata.full_name;
     }
     if (user.email) {
-      return user.email.charAt(0).toUpperCase();
+      return user.email;
     }
-    return 'U';
+    return 'User';
   };
 
   // Plan display name
@@ -50,28 +93,27 @@ export default function ProfileScreen({ navigation }) {
 
         {/* Avatar and Info */}
         <View style={styles.avatarSection}>
-          <View style={styles.avatar}>
-            <LinearGradient
-              colors={['#8C52FF', '#5CE1E6']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                width: '100%',
-                height: '100%',
-                borderRadius: 48,
-                overflow: 'hidden',
-              }}
-              pointerEvents="none"
-            />
-            <FontAwesome5 name="user" size={40} color="#fff" />
-          </View>
-          <Text style={styles.name}>
-            User
-          </Text>
-          <Text style={styles.email}>No email available</Text>
+        <View style={styles.avatar}>
+          <LinearGradient
+            colors={['#8C52FF', '#5CE1E6']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: '100%',
+              height: '100%',
+              borderRadius: 48,
+              overflow: 'hidden',
+            }}
+            pointerEvents="none"
+          />
+          <FontAwesome5 name="user" size={40} color="#fff" />
+        </View>
+        {/* Show name and email under the profile icon */}
+        <Text style={styles.name}>{getUserDisplayName()}</Text>
+        <Text style={styles.email}>{user?.user_metadata?.email || user?.email || ''}</Text>
           <View style={styles.planBadge}>
             <FontAwesome5
               name="crown"

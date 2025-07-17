@@ -1,8 +1,9 @@
-
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ActivityIndicator, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+
 import ProfileDropdownMenu from '../components/ProfileDropdownMenu';
+import { supabase } from '../lib/supabase';
 
 const studyPalIcon = require('../../assets/studypal-icon.png');
 
@@ -13,22 +14,40 @@ export default function LoginScreen({ navigation }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Dummy login handler (replace with real auth logic)
+  // Login handler using Supabase
   const handleLogin = async () => {
     setIsLoading(true);
     setError(null);
-    // Basic validation
-    if (!email.trim() || !password) {
-      setError('Please enter your email and password');
+    try {
+      if (!email.trim() || !password) {
+        setError('Please enter your email and password');
+        setIsLoading(false);
+        return;
+      }
+      const { data, error: loginError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (loginError) {
+        // Show the full error object in the UI for debugging on device
+        setError((loginError.message || 'Invalid credentials') + '\n' + JSON.stringify(loginError));
+        setIsLoading(false);
+        return;
+      }
+      if (data && data.user) {
+        // Reset navigation to MainTabs so user state is fetched and dropdown updates
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'MainTabs' }],
+        });
+      } else {
+        setError('Login failed. Please try again.');
+      }
+    } catch (e) {
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
       setIsLoading(false);
-      return;
     }
-    // Simulate async login
-    setTimeout(() => {
-      setIsLoading(false);
-      // setError('Invalid credentials'); // Uncomment for error demo
-      // navigation.navigate('ChatScreen'); // Uncomment for success demo
-    }, 1200);
   };
 
   const renderHeader = () => (
@@ -69,7 +88,7 @@ export default function LoginScreen({ navigation }) {
           />
           <View style={{ width: '100%', position: 'relative' }}>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { paddingRight: 40 }]}
               placeholder="Password"
               placeholderTextColor="#a0a0a0"
               secureTextEntry={!showPassword}
@@ -159,9 +178,11 @@ const styles = StyleSheet.create({
   },
   eyeBtn: {
     position: 'absolute',
-    right: 10,
-    top: '50%',
-    marginTop: -11,
+    right: 14,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 4,
     zIndex: 2,
   },

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { supabase } from '../../supabase';
 import { View, TouchableOpacity, Text, StyleSheet, Modal, Pressable } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -12,6 +13,11 @@ import { MaterialIcons } from '@expo/vector-icons';
 export default function ProfileDropdownMenu({ navigation, user }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const isLoggedIn = !!(user && user.user_metadata);
+  // DEBUG: Show user and isLoggedIn state
+  // Remove after debugging
+  // console.log('ProfileDropdownMenu user:', user);
+  // console.log('ProfileDropdownMenu isLoggedIn:', isLoggedIn);
   return (
     <View style={{ position: 'relative' }}>
       <TouchableOpacity
@@ -20,20 +26,62 @@ export default function ProfileDropdownMenu({ navigation, user }) {
         accessibilityLabel="Profile Menu"
       >
         <View style={styles.iconCircle}>
-          <MaterialIcons name="person-outline" size={20} color="#a0a0a0" />
+          {isLoggedIn && getUserInitial(user) ? (
+            <Text style={styles.iconInitial}>
+              {getUserInitial(user)}
+            </Text>
+          ) : (
+            <MaterialIcons name="person-outline" size={20} color="#a0a0a0" />
+          )}
         </View>
       </TouchableOpacity>
+      {/* DEBUG: Show login state in dropdown for troubleshooting */}
+      {__DEV__ && (
+        <Text style={{ color: 'yellow', fontSize: 10, position: 'absolute', top: 40, right: 0, zIndex: 1000 }}>
+          isLoggedIn: {String(isLoggedIn)} | user: {user ? 'yes' : 'no'}
+        </Text>
+      )}
       <Modal
         visible={menuOpen}
         transparent
         animationType="fade"
         onRequestClose={() => setMenuOpen(false)}
       >
-        <Pressable style={styles.modalOverlay} onPress={() => setMenuOpen(false)}>
+        <View style={{ flex: 1 }}>
+          {/* Overlay to close menu when clicking outside */}
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => setMenuOpen(false)}
+          />
           <View style={styles.dropdownMenuWrapper} pointerEvents="box-none">
             <View style={styles.dropdownMenu}>
-              {/* Dropdown menu navigation logic */}
-              {!user && (
+              {isLoggedIn ? (
+                <>
+                  <TouchableOpacity
+                    style={[styles.menuItem, styles.menuItemTop]}
+                    onPress={() => {
+                      setMenuOpen(false);
+                      if (navigation.navigate) {
+                        navigation.navigate('Profile');
+                      }
+                    }}
+                  >
+                    <Text style={styles.menuText}>Profile</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.menuItem, styles.menuItemBottom]}
+                    onPress={async () => {
+                      setMenuOpen(false);
+                      await supabase.auth.signOut();
+                      if (navigation.navigate) {
+                        navigation.navigate('LoginScreen');
+                      }
+                    }}
+                  >
+                    <Text style={[styles.menuText, { color: '#f43f5e' }]}>Logout</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
                 <>
                   <TouchableOpacity
                     style={[styles.menuItem, styles.menuItemTop]}
@@ -49,33 +97,40 @@ export default function ProfileDropdownMenu({ navigation, user }) {
                   </TouchableOpacity>
                 </>
               )}
-              {user && (
-                <TouchableOpacity
-                  style={[styles.menuItem, styles.menuItemTop]}
-                  onPress={() => { setMenuOpen(false); navigation.navigate && navigation.navigate('Profile'); }}
-                >
-                  <Text style={styles.menuText}>Profile</Text>
-                </TouchableOpacity>
-              )}
-              {user && (
-                <TouchableOpacity
-                  style={[styles.menuItem, styles.menuItemBottom]}
-                  onPress={() => { setMenuOpen(false); /* handleLogout() */ }}
-                >
-                  <Text style={[styles.menuText, { color: '#f43f5e' }]}>Logout</Text>
-                </TouchableOpacity>
-              )}
             </View>
           </View>
-        </Pressable>
+        </View>
       </Modal>
     </View>
-
   );
 }
 
+// Helper to get user's first initial
+function getUserInitial(user) {
+  if (!user || !user.user_metadata) return '';
+  const { first_name, firstName, full_name, fullName, email } = user.user_metadata;
+  let initial = first_name || firstName;
+  if (!initial && (full_name || fullName)) {
+    initial = (full_name || fullName).split(' ')[0];
+  }
+  if (!initial && email) {
+    initial = email[0];
+  }
+  return initial ? initial[0].toUpperCase() : '';
+}
+
+
 
 const styles = StyleSheet.create({
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'transparent',
+    zIndex: 1,
+  },
   profileBtn: {
     height: 32,
     width: 32,
@@ -94,11 +149,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dropdownMenu: {
+  iconInitial: {
+    color: '#b0b0b0',
+    fontWeight: 'bold',
+    fontSize: 15,
+    textAlign: 'center',
+  },
+  dropdownMenuWrapper: {
     position: 'absolute',
-    top: 40,
-    right: 0,
+    top: 105, // Place below header, at top of body
+    right: 16, // Add some margin from the right edge
+    zIndex: 2,
     width: 170,
+  },
+  dropdownMenu: {
+    width: '100%',
     backgroundColor: '#23232a',
     borderRadius: 12,
     borderWidth: 1,
